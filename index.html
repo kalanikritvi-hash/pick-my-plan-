@@ -1,0 +1,1182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pick My Plan</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #eef2ff;
+      --bg-accent: #f0fdf4;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --primary-light: #eef2ff;
+      --success: #059669;
+      --success-light: #ecfdf5;
+      --success-border: #6ee7b7;
+      --accent: #0ea5e9;
+      --radius: 16px;
+      --radius-sm: 10px;
+      --shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 32px rgba(79, 70, 229, 0.08);
+      --shadow-lg: 0 4px 6px rgba(15, 23, 42, 0.04), 0 20px 48px rgba(79, 70, 229, 0.12);
+    }
+
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.55;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 50% at 50% -10%, rgba(79, 70, 229, 0.14), transparent),
+        radial-gradient(ellipse 60% 40% at 100% 100%, rgba(14, 165, 233, 0.1), transparent),
+        radial-gradient(ellipse 50% 30% at 0% 80%, rgba(5, 150, 105, 0.08), transparent);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .app {
+      position: relative;
+      z-index: 1;
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 2.5rem 1.25rem 4rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2.25rem;
+    }
+
+    .logo-mark {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 52px;
+      height: 52px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      border-radius: 14px;
+      margin-bottom: 1rem;
+      box-shadow: 0 8px 24px rgba(79, 70, 229, 0.3);
+    }
+
+    .logo-mark svg {
+      width: 28px;
+      height: 28px;
+      fill: none;
+      stroke: white;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    header h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      background: linear-gradient(135deg, var(--text) 30%, var(--primary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    header p {
+      color: var(--text-muted);
+      margin-top: 0.5rem;
+      font-size: 1rem;
+      max-width: 420px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .progress-wrap {
+      margin-bottom: 1.5rem;
+    }
+
+    .step-dots {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      margin-bottom: 1rem;
+    }
+
+    .step-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 99px;
+      background: var(--border);
+      transition: all 0.35s ease;
+    }
+
+    .step-dot.done { background: var(--primary); opacity: 0.45; }
+    .step-dot.active { width: 28px; background: linear-gradient(90deg, var(--primary), var(--accent)); opacity: 1; }
+
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+    }
+
+    .progress-bar {
+      height: 4px;
+      background: rgba(79, 70, 229, 0.12);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      border-radius: 99px;
+      transition: width 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-lg);
+      padding: 2.25rem;
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(8px);
+    }
+
+    .step { display: none; }
+    .step.active { display: block; animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .step-number {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--primary);
+      background: var(--primary-light);
+      padding: 0.3rem 0.65rem;
+      border-radius: 6px;
+      margin-bottom: 0.75rem;
+    }
+
+    .step h2 {
+      font-size: 1.45rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.4rem;
+      line-height: 1.25;
+    }
+
+    .step .hint {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      margin-bottom: 1.75rem;
+    }
+
+    label.field-label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 600;
+      margin-bottom: 0.45rem;
+      color: var(--text);
+    }
+
+    input[type="number"],
+    input[type="text"] {
+      width: 100%;
+      padding: 0.85rem 1rem;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-family: inherit;
+      font-size: 1rem;
+      background: #fafbfc;
+      transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: var(--primary);
+      background: var(--surface);
+      box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.12);
+    }
+
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+    }
+
+    .option { position: relative; }
+
+    .option input {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .option label {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      padding: 1rem 1.15rem;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 0.97rem;
+      background: #fafbfc;
+      transition: border-color 0.2s, background 0.2s, box-shadow 0.2s, transform 0.15s;
+    }
+
+    .option label::before {
+      content: '';
+      flex-shrink: 0;
+      width: 20px;
+      height: 20px;
+      border: 2px solid #cbd5e1;
+      border-radius: 50%;
+      transition: all 0.2s;
+    }
+
+    .option input:checked + label {
+      border-color: var(--primary);
+      background: var(--primary-light);
+      font-weight: 600;
+      box-shadow: 0 0 0 1px rgba(79, 70, 229, 0.15);
+    }
+
+    .option input:checked + label::before {
+      border-color: var(--primary);
+      background: var(--primary);
+      box-shadow: inset 0 0 0 3px white;
+    }
+
+    .option label:hover {
+      border-color: #94a3b8;
+      transform: translateY(-1px);
+    }
+
+    .plan-block {
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 1.35rem;
+      margin-bottom: 1rem;
+      background: linear-gradient(135deg, #fafbfc, #f8fafc);
+      border-left: 4px solid var(--primary);
+      transition: box-shadow 0.2s;
+    }
+
+    .plan-block:nth-child(3) { border-left-color: var(--accent); }
+    .plan-block:nth-child(4) { border-left-color: var(--success); }
+
+    .plan-block h3 {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .field-grid { display: grid; gap: 0.9rem; }
+    .field-grid.two-col { grid-template-columns: 1fr 1fr; }
+
+    @media (max-width: 480px) {
+      .field-grid.two-col { grid-template-columns: 1fr; }
+      .card { padding: 1.5rem; }
+      header h1 { font-size: 1.65rem; }
+    }
+
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 2rem;
+      gap: 0.75rem;
+      padding-top: 0.25rem;
+    }
+
+    button {
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 600;
+      padding: 0.85rem 1.6rem;
+      border-radius: var(--radius-sm);
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+    }
+
+    button:active { transform: scale(0.98); }
+
+    .btn-back {
+      background: var(--surface);
+      color: var(--text-muted);
+      border: 1.5px solid var(--border);
+    }
+
+    .btn-back:hover { background: #f8fafc; border-color: #cbd5e1; }
+
+    .btn-next {
+      background: linear-gradient(135deg, var(--primary), #6366f1);
+      color: white;
+      margin-left: auto;
+      box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
+    }
+
+    .btn-next:hover {
+      background: linear-gradient(135deg, var(--primary-hover), #4f46e5);
+      box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
+    }
+
+    .btn-next:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: none; }
+
+    .error-msg {
+      color: #dc2626;
+      font-size: 0.85rem;
+      margin-top: 0.75rem;
+      display: none;
+      padding: 0.6rem 0.85rem;
+      background: #fef2f2;
+      border-radius: 8px;
+      border: 1px solid #fecaca;
+    }
+
+    .error-msg.visible { display: block; }
+
+    /* Results */
+    .result-hero {
+      background: linear-gradient(145deg, #ecfdf5 0%, #eef2ff 100%);
+      border: 1.5px solid var(--success-border);
+      border-radius: var(--radius);
+      padding: 1.75rem;
+      margin-bottom: 1.75rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .result-hero::after {
+      content: '';
+      position: absolute;
+      top: -40px;
+      right: -40px;
+      width: 120px;
+      height: 120px;
+      background: radial-gradient(circle, rgba(5, 150, 105, 0.15), transparent 70%);
+      pointer-events: none;
+    }
+
+    .result-hero .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      background: var(--success);
+      color: white;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 0.35rem 0.75rem;
+      border-radius: 99px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 0.85rem;
+    }
+
+    .result-hero h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.15rem;
+    }
+
+    .result-hero .cost {
+      font-size: 2.35rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      color: var(--success);
+      margin: 0.35rem 0 1.25rem;
+    }
+
+    .result-hero .cost span {
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      letter-spacing: 0;
+    }
+
+    .explanation-block { margin-top: 0.25rem; }
+
+    .explanation-block > p {
+      font-size: 0.95rem;
+      line-height: 1.7;
+      color: var(--text);
+      margin-bottom: 1rem;
+    }
+
+    .comparison-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+      margin: 1rem 0;
+    }
+
+    .comparison-list li {
+      font-size: 0.92rem;
+      line-height: 1.6;
+      padding: 0.85rem 1rem;
+      background: rgba(255, 255, 255, 0.7);
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(5, 150, 105, 0.2);
+    }
+
+    .comparison-list li strong { color: var(--text); }
+
+    .comparison-list .savings {
+      color: var(--success);
+      font-weight: 600;
+    }
+
+    .comparison-list .costlier {
+      color: #b45309;
+      font-weight: 600;
+    }
+
+    .income-note {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      padding: 0.85rem 1rem;
+      background: rgba(255, 255, 255, 0.6);
+      border-radius: var(--radius-sm);
+      border-left: 3px solid var(--accent);
+      margin-top: 0.5rem;
+    }
+
+    .section-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      margin-bottom: 0.25rem;
+    }
+
+    .plan-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-top: 1.25rem;
+    }
+
+    .plan-card {
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 1.15rem 1.25rem;
+      background: #fafbfc;
+      transition: border-color 0.2s;
+    }
+
+    .plan-card.winner {
+      border-color: var(--success-border);
+      background: linear-gradient(135deg, #ecfdf5, #f0fdf4);
+      box-shadow: 0 0 0 1px rgba(5, 150, 105, 0.15);
+    }
+
+    .plan-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 0.75rem;
+      margin-bottom: 0.85rem;
+    }
+
+    .plan-card-name {
+      font-weight: 700;
+      font-size: 1rem;
+    }
+
+    .plan-card-total {
+      font-size: 1.15rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .plan-card.winner .plan-card-total { color: var(--success); }
+
+    .best-tag {
+      display: inline-block;
+      font-size: 0.65rem;
+      background: var(--success);
+      color: white;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      margin-left: 0.4rem;
+      vertical-align: middle;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .cost-bar-wrap {
+      height: 8px;
+      background: #e2e8f0;
+      border-radius: 99px;
+      overflow: hidden;
+      margin-bottom: 0.65rem;
+    }
+
+    .cost-bar {
+      height: 100%;
+      border-radius: 99px;
+      background: linear-gradient(90deg, #94a3b8, #64748b);
+      transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .plan-card.winner .cost-bar {
+      background: linear-gradient(90deg, var(--success), #34d399);
+    }
+
+    .plan-card-details {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem 1.25rem;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+
+    .plan-card-details span strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .plan-card-details .costlier { color: #b45309; }
+    .plan-card-details .savings { color: var(--success); }
+
+    .profile-summary {
+      margin-top: 1.75rem;
+      padding: 1.15rem;
+      background: var(--primary-light);
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(79, 70, 229, 0.12);
+    }
+
+    .profile-summary-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--primary);
+      margin-bottom: 0.65rem;
+    }
+
+    .profile-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+    }
+
+    .profile-tag {
+      font-size: 0.8rem;
+      padding: 0.35rem 0.7rem;
+      background: white;
+      border-radius: 6px;
+      color: var(--text);
+      border: 1px solid rgba(79, 70, 229, 0.1);
+    }
+
+    .btn-restart {
+      width: 100%;
+      margin-top: 1.75rem;
+      background: var(--surface);
+      color: var(--primary);
+      border: 1.5px solid var(--primary);
+    }
+
+    .btn-restart:hover {
+      background: var(--primary-light);
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15);
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="logo-mark">
+        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      </div>
+      <h1>Pick My Plan</h1>
+      <p>Answer a few questions, compare plans, and find your best fit.</p>
+    </header>
+
+    <div class="progress-wrap">
+      <div class="step-dots" id="stepDots"></div>
+      <div class="progress-label">
+        <span id="stepLabel">Step 1 of 7</span>
+        <span id="stepName">Your age</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill" style="width: 14%"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <!-- Step 0: Age -->
+      <div class="step active" data-step="0">
+        <span class="step-number">Question 1 of 5</span>
+        <h2>How old are you?</h2>
+        <p class="hint">Your age helps us estimate typical healthcare needs.</p>
+        <label class="field-label" for="age">Age</label>
+        <input type="number" id="age" min="18" max="100" placeholder="e.g. 34">
+        <p class="error-msg" id="err-age">Please enter an age between 18 and 100.</p>
+      </div>
+
+      <!-- Step 1: Health -->
+      <div class="step" data-step="1">
+        <span class="step-number">Question 2 of 5</span>
+        <h2>How would you describe your health?</h2>
+        <p class="hint">Think about how often you need medical care in a typical year.</p>
+        <div class="options">
+          <div class="option">
+            <input type="radio" name="health" id="health-rare" value="rare">
+            <label for="health-rare">Rarely see a doctor</label>
+          </div>
+          <div class="option">
+            <input type="radio" name="health" id="health-occasional" value="occasional">
+            <label for="health-occasional">Occasional visits</label>
+          </div>
+          <div class="option">
+            <input type="radio" name="health" id="health-frequent" value="frequent">
+            <label for="health-frequent">Frequent care</label>
+          </div>
+        </div>
+        <p class="error-msg" id="err-health">Please select an option.</p>
+      </div>
+
+      <!-- Step 2: Medications -->
+      <div class="step" data-step="2">
+        <span class="step-number">Question 3 of 5</span>
+        <h2>Do you take any prescription medications?</h2>
+        <p class="hint">Include any regular prescriptions you fill.</p>
+        <div class="options">
+          <div class="option">
+            <input type="radio" name="meds" id="meds-yes" value="yes">
+            <label for="meds-yes">Yes</label>
+          </div>
+          <div class="option">
+            <input type="radio" name="meds" id="meds-no" value="no">
+            <label for="meds-no">No</label>
+          </div>
+        </div>
+        <p class="error-msg" id="err-meds">Please select an option.</p>
+      </div>
+
+      <!-- Step 3: Visits -->
+      <div class="step" data-step="3">
+        <span class="step-number">Question 4 of 5</span>
+        <h2>How many times did you visit a doctor last year?</h2>
+        <p class="hint">Count primary care, specialist, and urgent care visits.</p>
+        <div class="options">
+          <div class="option">
+            <input type="radio" name="visits" id="visits-low" value="0-2">
+            <label for="visits-low">0–2 visits</label>
+          </div>
+          <div class="option">
+            <input type="radio" name="visits" id="visits-mid" value="3-6">
+            <label for="visits-mid">3–6 visits</label>
+          </div>
+          <div class="option">
+            <input type="radio" name="visits" id="visits-high" value="7+">
+            <label for="visits-high">7+ visits</label>
+          </div>
+        </div>
+        <p class="error-msg" id="err-visits">Please select an option.</p>
+      </div>
+
+      <!-- Step 4: Income -->
+      <div class="step" data-step="4">
+        <span class="step-number">Question 5 of 5</span>
+        <h2>What is your annual income?</h2>
+        <p class="hint">We use this to factor in how affordable each plan may feel.</p>
+        <div class="options">
+          <div class="option">
+            <input type="radio" name="income" id="income-low" value="under40">
+            <label for="income-low">Under $40k</label>
+          </div>
+          <div class="option">
+            <input type="radio" name="income" id="income-mid" value="40-80">
+            <label for="income-mid">$40k–$80k</label>
+          </div>
+          <div class="option">
+            <input type="radio" name="income" id="income-high" value="over80">
+            <label for="income-high">Over $80k</label>
+          </div>
+        </div>
+        <p class="error-msg" id="err-income">Please select an option.</p>
+      </div>
+
+      <!-- Step 5: Plans -->
+      <div class="step" data-step="5">
+        <span class="step-number">Your plans</span>
+        <h2>Enter your insurance plans</h2>
+        <p class="hint">Add up to 3 plans you're comparing. At least one is required.</p>
+
+        <div class="plan-block" data-plan="0">
+          <h3>Plan 1</h3>
+          <div class="field-grid">
+            <div>
+              <label class="field-label" for="plan0-name">Plan name</label>
+              <input type="text" id="plan0-name" placeholder="e.g. Silver HMO">
+            </div>
+            <div class="field-grid two-col">
+              <div>
+                <label class="field-label" for="plan0-premium">Monthly premium ($)</label>
+                <input type="number" id="plan0-premium" min="0" step="1" placeholder="350">
+              </div>
+              <div>
+                <label class="field-label" for="plan0-deductible">Deductible ($)</label>
+                <input type="number" id="plan0-deductible" min="0" step="1" placeholder="2000">
+              </div>
+            </div>
+            <div>
+              <label class="field-label" for="plan0-oop">Out-of-pocket max ($)</label>
+              <input type="number" id="plan0-oop" min="0" step="1" placeholder="7000">
+            </div>
+          </div>
+        </div>
+
+        <div class="plan-block" data-plan="1">
+          <h3>Plan 2 (optional)</h3>
+          <div class="field-grid">
+            <div>
+              <label class="field-label" for="plan1-name">Plan name</label>
+              <input type="text" id="plan1-name" placeholder="e.g. Bronze PPO">
+            </div>
+            <div class="field-grid two-col">
+              <div>
+                <label class="field-label" for="plan1-premium">Monthly premium ($)</label>
+                <input type="number" id="plan1-premium" min="0" step="1" placeholder="">
+              </div>
+              <div>
+                <label class="field-label" for="plan1-deductible">Deductible ($)</label>
+                <input type="number" id="plan1-deductible" min="0" step="1" placeholder="">
+              </div>
+            </div>
+            <div>
+              <label class="field-label" for="plan1-oop">Out-of-pocket max ($)</label>
+              <input type="number" id="plan1-oop" min="0" step="1" placeholder="">
+            </div>
+          </div>
+        </div>
+
+        <div class="plan-block" data-plan="2">
+          <h3>Plan 3 (optional)</h3>
+          <div class="field-grid">
+            <div>
+              <label class="field-label" for="plan2-name">Plan name</label>
+              <input type="text" id="plan2-name" placeholder="e.g. Gold EPO">
+            </div>
+            <div class="field-grid two-col">
+              <div>
+                <label class="field-label" for="plan2-premium">Monthly premium ($)</label>
+                <input type="number" id="plan2-premium" min="0" step="1" placeholder="">
+              </div>
+              <div>
+                <label class="field-label" for="plan2-deductible">Deductible ($)</label>
+                <input type="number" id="plan2-deductible" min="0" step="1" placeholder="">
+              </div>
+            </div>
+            <div>
+              <label class="field-label" for="plan2-oop">Out-of-pocket max ($)</label>
+              <input type="number" id="plan2-oop" min="0" step="1" placeholder="">
+            </div>
+          </div>
+        </div>
+
+        <p class="error-msg" id="err-plans">Please fill in at least one complete plan (name, premium, deductible, and out-of-pocket max).</p>
+      </div>
+
+      <!-- Step 6: Results -->
+      <div class="step" data-step="6">
+        <div id="resultsContent"></div>
+        <button type="button" class="btn-restart" id="btnRestart">Start over</button>
+      </div>
+
+      <div class="nav" id="navButtons">
+        <button type="button" class="btn-back" id="btnBack" style="visibility: hidden">Back</button>
+        <button type="button" class="btn-next" id="btnNext">Continue</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const STEP_NAMES = [
+      'Your age',
+      'Your health',
+      'Medications',
+      'Doctor visits',
+      'Your income',
+      'Your plans',
+      'Your recommendation'
+    ];
+
+    const TOTAL_STEPS = 7;
+    let currentStep = 0;
+
+    const btnBack = document.getElementById('btnBack');
+    const btnNext = document.getElementById('btnNext');
+    const btnRestart = document.getElementById('btnRestart');
+    const navButtons = document.getElementById('navButtons');
+    const progressFill = document.getElementById('progressFill');
+    const stepLabel = document.getElementById('stepLabel');
+    const stepName = document.getElementById('stepName');
+    const stepDotsEl = document.getElementById('stepDots');
+
+    for (let i = 0; i < TOTAL_STEPS; i++) {
+      const dot = document.createElement('div');
+      dot.className = 'step-dot' + (i === 0 ? ' active' : '');
+      dot.dataset.step = i;
+      stepDotsEl.appendChild(dot);
+    }
+
+    function updateStepDots(n) {
+      stepDotsEl.querySelectorAll('.step-dot').forEach(dot => {
+        const i = Number(dot.dataset.step);
+        dot.classList.remove('active', 'done');
+        if (i === n) dot.classList.add('active');
+        else if (i < n) dot.classList.add('done');
+      });
+    }
+
+    function showStep(n) {
+      currentStep = n;
+      document.querySelectorAll('.step').forEach(el => {
+        el.classList.toggle('active', Number(el.dataset.step) === n);
+      });
+
+      stepLabel.textContent = `Step ${n + 1} of ${TOTAL_STEPS}`;
+      stepName.textContent = STEP_NAMES[n];
+      progressFill.style.width = `${((n + 1) / TOTAL_STEPS) * 100}%`;
+      updateStepDots(n);
+
+      btnBack.style.visibility = n === 0 ? 'hidden' : 'visible';
+      navButtons.style.display = n === 6 ? 'none' : 'flex';
+      btnNext.textContent = n === 5 ? 'See my recommendation' : 'Continue';
+
+      hideAllErrors();
+    }
+
+    function hideAllErrors() {
+      document.querySelectorAll('.error-msg').forEach(el => el.classList.remove('visible'));
+    }
+
+    function showError(id) {
+      document.getElementById(id).classList.add('visible');
+    }
+
+    function getRadio(name) {
+      const el = document.querySelector(`input[name="${name}"]:checked`);
+      return el ? el.value : null;
+    }
+
+    function validateStep(n) {
+      hideAllErrors();
+
+      if (n === 0) {
+        const age = parseInt(document.getElementById('age').value, 10);
+        if (!age || age < 18 || age > 100) {
+          showError('err-age');
+          return false;
+        }
+      }
+
+      if (n === 1 && !getRadio('health')) { showError('err-health'); return false; }
+      if (n === 2 && !getRadio('meds')) { showError('err-meds'); return false; }
+      if (n === 3 && !getRadio('visits')) { showError('err-visits'); return false; }
+      if (n === 4 && !getRadio('income')) { showError('err-income'); return false; }
+
+      if (n === 5) {
+        const plans = collectPlans();
+        if (plans.length === 0) {
+          showError('err-plans');
+          return false;
+        }
+      }
+
+      return true;
+    }
+
+    function collectPlans() {
+      const plans = [];
+      for (let i = 0; i < 3; i++) {
+        const name = document.getElementById(`plan${i}-name`).value.trim();
+        const premium = parseFloat(document.getElementById(`plan${i}-premium`).value);
+        const deductible = parseFloat(document.getElementById(`plan${i}-deductible`).value);
+        const oop = parseFloat(document.getElementById(`plan${i}-oop`).value);
+
+        const hasAny = name || !isNaN(premium) || !isNaN(deductible) || !isNaN(oop);
+        const isComplete = name && !isNaN(premium) && premium >= 0 &&
+          !isNaN(deductible) && deductible >= 0 && !isNaN(oop) && oop >= 0;
+
+        if (hasAny && !isComplete) return [];
+        if (isComplete) plans.push({ name, premium, deductible, oop });
+      }
+      return plans;
+    }
+
+    function getProfile() {
+      return {
+        age: parseInt(document.getElementById('age').value, 10),
+        health: getRadio('health'),
+        meds: getRadio('meds'),
+        visits: getRadio('visits'),
+        income: getRadio('income')
+      };
+    }
+
+    function estimateMedicalCosts(profile) {
+      const healthBase = { rare: 800, occasional: 2200, frequent: 5500 };
+      const visitAdd = { '0-2': 400, '3-6': 1400, '7+': 3200 };
+      const medAdd = profile.meds === 'yes' ? 1800 : 0;
+
+      let ageMult = 1;
+      if (profile.age < 30) ageMult = 0.75;
+      else if (profile.age < 45) ageMult = 1;
+      else if (profile.age < 60) ageMult = 1.25;
+      else ageMult = 1.55;
+
+      const base = healthBase[profile.health] + visitAdd[profile.visits] + medAdd;
+      return Math.round(base * ageMult);
+    }
+
+    function calcOutOfPocket(estimatedMedical, deductible, oopMax) {
+      if (estimatedMedical <= 0) return 0;
+
+      let oop;
+      if (estimatedMedical <= deductible) {
+        oop = estimatedMedical;
+      } else {
+        const coinsurance = 0.2;
+        oop = deductible + (estimatedMedical - deductible) * coinsurance;
+      }
+      return Math.min(Math.round(oop), oopMax);
+    }
+
+    function analyzePlans(profile, plans) {
+      const estimatedMedical = estimateMedicalCosts(profile);
+
+      return plans.map(plan => {
+        const annualPremium = plan.premium * 12;
+        const medicalOOP = calcOutOfPocket(estimatedMedical, plan.deductible, plan.oop);
+        const totalCost = annualPremium + medicalOOP;
+
+        return {
+          ...plan,
+          estimatedMedical,
+          annualPremium,
+          medicalOOP,
+          totalCost
+        };
+      }).sort((a, b) => a.totalCost - b.totalCost);
+    }
+
+    function formatMoney(n) {
+      return '$' + n.toLocaleString('en-US');
+    }
+
+    function healthLabel(v) {
+      return { rare: 'rarely see a doctor', occasional: 'occasionally need care', frequent: 'need frequent care' }[v];
+    }
+
+    function visitsLabel(v) {
+      return { '0-2': '0–2 doctor visits', '3-6': '3–6 doctor visits', '7+': '7 or more doctor visits' }[v];
+    }
+
+    function incomeLabel(v) {
+      return { under40: 'under $40k', '40-80': '$40k–$80k', over80: 'over $80k' }[v];
+    }
+
+    function describePlanDifference(best, other) {
+      const premiumDiff = other.annualPremium - best.annualPremium;
+      const oopDiff = other.medicalOOP - best.medicalOOP;
+      const reasons = [];
+
+      if (Math.abs(premiumDiff) >= 100) {
+        if (premiumDiff > 0) {
+          reasons.push(`higher premiums (${formatMoney(other.premium)}/mo vs ${formatMoney(best.premium)}/mo)`);
+        } else {
+          reasons.push(`lower premiums (${formatMoney(other.premium)}/mo vs ${formatMoney(best.premium)}/mo)`);
+        }
+      }
+
+      if (Math.abs(oopDiff) >= 50) {
+        if (oopDiff > 0) {
+          reasons.push(`higher expected out-of-pocket costs (${formatMoney(other.medicalOOP)} vs ${formatMoney(best.medicalOOP)})`);
+        } else {
+          reasons.push(`lower expected out-of-pocket costs (${formatMoney(other.medicalOOP)} vs ${formatMoney(best.medicalOOP)})`);
+        }
+      }
+
+      if (other.deductible > best.deductible + 200) {
+        reasons.push(`a higher deductible (${formatMoney(other.deductible)} vs ${formatMoney(best.deductible)})`);
+      } else if (other.deductible < best.deductible - 200) {
+        reasons.push(`a lower deductible (${formatMoney(other.deductible)} vs ${formatMoney(best.deductible)})`);
+      }
+
+      if (reasons.length === 0) {
+        return 'similar cost structure overall, but slightly higher when combined';
+      }
+
+      if (reasons.length === 1) return reasons[0];
+      return reasons.slice(0, -1).join(', ') + ', and ' + reasons[reasons.length - 1];
+    }
+
+    function buildExplanation(profile, results) {
+      const best = results[0];
+      const estimated = best.estimatedMedical;
+      const utilLevel = estimated < 2000 ? 'low' : estimated < 4500 ? 'moderate' : 'high';
+
+      let intro = `<p>Based on your profile — age ${profile.age}, you ${healthLabel(profile.health)}, ${visitsLabel(profile.visits)} last year`;
+      if (profile.meds === 'yes') intro += ', and you take prescription medications';
+      intro += ` — we estimate about <strong>${formatMoney(estimated)}</strong> in covered medical costs for the coming year.</p>`;
+
+      let context = '';
+      if (utilLevel === 'low') {
+        context = '<p>Because your expected healthcare use is relatively low, plans with lower monthly premiums tend to come out ahead.</p>';
+      } else if (utilLevel === 'high') {
+        context = '<p>Because you expect significant healthcare use, plans with lower deductibles and out-of-pocket caps often win — even when the monthly premium is higher.</p>';
+      } else {
+        context = '<p>With moderate expected healthcare use, the best plan balances monthly premiums against likely out-of-pocket costs.</p>';
+      }
+
+      let winner = `<p><strong>${best.name}</strong> is our top pick at <strong>${formatMoney(best.totalCost)}/year</strong> — ${formatMoney(best.annualPremium)} in premiums plus roughly ${formatMoney(best.medicalOOP)} in out-of-pocket costs.</p>`;
+
+      let comparisons = '';
+      const others = results.slice(1);
+
+      if (others.length > 0) {
+        comparisons = '<p><strong>Compared to your other plans:</strong></p><ul class="comparison-list">';
+        others.forEach(plan => {
+          const diff = plan.totalCost - best.totalCost;
+          const reason = describePlanDifference(best, plan);
+          if (diff > 0) {
+            comparisons += `<li><strong>${plan.name}</strong> would cost <span class="costlier">${formatMoney(diff)} more</span> per year (${formatMoney(plan.totalCost)} total). This is mainly due to ${reason}.</li>`;
+          } else {
+            comparisons += `<li><strong>${plan.name}</strong> ties at ${formatMoney(plan.totalCost)}/year — same estimated total as ${best.name}, with ${reason}.</li>`;
+          }
+        });
+        comparisons += '</ul>';
+      }
+
+      let incomeNote = '';
+      if (profile.income === 'under40' && best.annualPremium > 4000) {
+        incomeNote = `<p class="income-note">At your income level (${incomeLabel(profile.income)}), a ${formatMoney(best.premium)}/month premium may feel heavy. You may want to explore subsidies or lower-premium options if available.</p>`;
+      } else if (profile.income === 'over80' && utilLevel === 'low' && best.deductible > 3000) {
+        incomeNote = `<p class="income-note">As a lighter healthcare user with higher income, a high-deductible plan with lower premiums could also work if you're comfortable paying more upfront for occasional care.</p>`;
+      }
+
+      return `<div class="explanation-block">${intro}${context}${winner}${comparisons}${incomeNote}</div>`;
+    }
+
+    function renderResults() {
+      const profile = getProfile();
+      const plans = collectPlans();
+      const results = analyzePlans(profile, plans);
+      const best = results[0];
+      const maxCost = Math.max(...results.map(r => r.totalCost));
+
+      let planCards = '<div class="plan-cards">';
+      results.forEach((r, i) => {
+        const barWidth = maxCost > 0 ? (r.totalCost / maxCost) * 100 : 0;
+        planCards += `
+          <div class="plan-card ${i === 0 ? 'winner' : ''}">
+            <div class="plan-card-header">
+              <div class="plan-card-name">${r.name}${i === 0 ? '<span class="best-tag">Best</span>' : ''}</div>
+              <div class="plan-card-total">${formatMoney(r.totalCost)}<span style="font-size:0.75rem;font-weight:500;color:var(--text-muted)">/yr</span></div>
+            </div>
+            <div class="cost-bar-wrap"><div class="cost-bar" style="width:${barWidth}%"></div></div>
+            <div class="plan-card-details">
+              <span>Premium: <strong>${formatMoney(r.annualPremium)}/yr</strong></span>
+              <span>Est. OOP: <strong>${formatMoney(r.medicalOOP)}</strong></span>
+              <span>Deductible: <strong>${formatMoney(r.deductible)}</strong></span>
+              ${i > 0 && r.totalCost > best.totalCost ? `<span>vs. best: <strong class="costlier">+${formatMoney(r.totalCost - best.totalCost)}</strong></span>` : ''}
+            </div>
+          </div>
+        `;
+      });
+      planCards += '</div>';
+
+      const html = `
+        <div class="result-hero">
+          <span class="badge">✓ Best match</span>
+          <h2>${best.name}</h2>
+          <div class="cost">${formatMoney(best.totalCost)}<span> / year estimated</span></div>
+          ${buildExplanation(profile, results)}
+        </div>
+
+        <p class="section-title">All plans at a glance</p>
+        <p class="hint" style="margin-bottom:0">Estimated annual costs based on your health profile.</p>
+        ${planCards}
+
+        <div class="profile-summary">
+          <div class="profile-summary-title">Your health profile</div>
+          <div class="profile-tags">
+            <span class="profile-tag">Age ${profile.age}</span>
+            <span class="profile-tag">${healthLabel(profile.health)}</span>
+            <span class="profile-tag">${profile.meds === 'yes' ? 'Takes medications' : 'No medications'}</span>
+            <span class="profile-tag">${visitsLabel(profile.visits)}</span>
+            <span class="profile-tag">Income ${incomeLabel(profile.income)}</span>
+            <span class="profile-tag">Est. care: ${formatMoney(best.estimatedMedical)}/yr</span>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('resultsContent').innerHTML = html;
+    }
+
+    btnNext.addEventListener('click', () => {
+      if (!validateStep(currentStep)) return;
+
+      if (currentStep === 5) {
+        renderResults();
+        showStep(6);
+      } else {
+        showStep(currentStep + 1);
+      }
+    });
+
+    btnBack.addEventListener('click', () => {
+      if (currentStep > 0) showStep(currentStep - 1);
+    });
+
+    btnRestart.addEventListener('click', () => {
+      document.getElementById('age').value = '';
+      document.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
+      for (let i = 0; i < 3; i++) {
+        ['name', 'premium', 'deductible', 'oop'].forEach(field => {
+          document.getElementById(`plan${i}-${field}`).value = '';
+        });
+      }
+      showStep(0);
+      navButtons.style.display = 'flex';
+    });
+
+    showStep(0);
+  </script>
+</body>
+</html>
